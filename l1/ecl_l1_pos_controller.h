@@ -64,6 +64,15 @@
 #include <matrix/math.hpp>
 #include <geo/geo.h>
 #include <ecl.h>
+#include <uORB/uORB.h> // (AWE)
+#include <uORB/topics/debug_key_value.h> // (AWE)
+
+/* (AWE) */
+using math::max;
+using math::min;
+using math::radians;
+using matrix::Vector2f;
+using matrix::Vector3f;
 
 /**
  * L1 Nonlinear Guidance Logic
@@ -146,7 +155,7 @@ public:
 	 * @return sets _lateral_accel setpoint
 	 */
 	void navigate_waypoints(const matrix::Vector2f &vector_A, const matrix::Vector2f &vector_B,
-				const matrix::Vector2f &vector_curr_position, const matrix::Vector2f &ground_speed);
+							const matrix::Vector2f &vector_curr_position, const matrix::Vector2f &ground_speed);
 
 	/**
 	 * Navigate on an orbit around a loiter waypoint.
@@ -157,7 +166,40 @@ public:
 	 * @return sets _lateral_accel setpoint
 	 */
 	void navigate_loiter(const matrix::Vector2f &vector_A, const matrix::Vector2f &vector_curr_position, float radius,
-			     int8_t loiter_direction, const matrix::Vector2f &ground_speed_vector);
+						 int8_t loiter_direction, const matrix::Vector2f &ground_speed_vector);
+
+	/**
+	* AWE Mode to fly the 8 Pattern in the hemisphere.
+	*
+	* Own implementation - SWE University of Stuttgart Feb 2019
+	*/
+	void navigate_awe_eight(const matrix::Vector3f &g_xg, const matrix::Vector3f &g_vg, const matrix::Vector3f &g_ag,
+							float &pitch_rate, float &roll_rate, float &thrust_sp, uint8_t &activeWPid, const Vector3f &eulerAngles,
+							const float flightPlnArr_deg[], const Vector2f &latLonTh_deg, const float &rAtNarrowestTurn,
+							const float &gain_gammaDiff, const float &gammaOffset_deg, const float &gain_distCorr,
+							const float &distCorr_tethLen, const float &distCorr_ceta, float &distCorr_omega);
+
+	/**
+	 * AWE Mode to fly an inclined circle in the hemisphere. Inspired by the AWEsome project of the University of Bonn.
+	 * https://www.lhc-ilc.physik.uni-bonn.de/research-groups/experimental-physics/prof.-k.-desch/research/airborne-wind-energy?set_language=en/
+	 *
+	 * If aircraft is outside of the S1 circle it will be in the 'center mode' and will fly towards the center of S1. If
+	 * it reaches the circle we will switch to 'circle mode' and fly the inclined circle S1.
+	 * For now the parameters which define the different circles are hardcoded into 'FixedwingPositionControll.cpp'.
+	 *
+	 * @param S2center: center of the home base
+	 * @param home_to_S1center: vector pointing from home to the center of the inclined circle (S1)
+	 * @param S2radius_m: radius of S2, equals optimal tether length
+	 * @param theta_r: cone angle of S1 to S2 connection, defines radius of S1
+	 * @param loiter_orientation: direction of loiter
+	 * @param aircraft_curr_pos_global: current lat, lon and alt of aircraft
+	 * @param ground_speed_vector: current vel_north and vel_east of aircraft
+	 * @param desired_loc: point on S1 circle closest to the aircraft
+	 * @param aircraft_yaw: current yaw angle of aircraft
+	 */
+	void navigate_awe_circle(const matrix::Vector3f &S2center, const matrix::Vector3f &home_to_S1center, const int32_t &S2radius_m,
+							 const float &theta_r, int8_t loiter_orientation, const matrix::Vector3f &aircraft_curr_pos_global,
+							 const matrix::Vector2f &ground_speed_vector, matrix::Vector3f &desired_loc, float aircraft_yaw);
 
 	/**
 	 * Navigate on a fixed bearing.
@@ -244,6 +286,54 @@ private:
 	 *
 	 */
 	void update_roll_setpoint();
+
+	/* (AWE) helper functions */
+	void location_offset(Vector3f& loc, float ofs_north, float ofs_east);
+
+	void AWEE_navigation(const Vector3f &g_xg,
+						 const Vector3f &g_vg,
+						 Vector2f &sphLatLon,
+						 matrix::Dcmf &Tlg,
+						 matrix::Dcmf &Tlk_l,
+						 float &l_gamma,
+						 float &l_chi);
+
+	void AWEE_guidance_WPSource(const float flightPlnArr_deg[],
+								const Vector2f &latLonTh_deg,
+								const Vector2f &presentLatLon,
+								uint8_t &activeWPid,
+								Vector3f &activeWP);
+
+	void AWEE_guidance_chiRef(const Vector2f &presentLatLon,
+							  const Vector3f &activeWP,
+							  const float &l_chi,
+							  float &l_chiDiff);
+
+	void AWEE_guidance_accRef(const float &l_chiDiff,
+							  const matrix::Dcmf &Tlg,
+							  const matrix::Dcmf &Tlk_l,
+							  const float &l_gamma,
+							  const Vector3f &g_xg,
+							  const Vector3f &g_vg,
+							  const float &rAtNarrowestTurn,
+							  const float &gain_gammaDiff,
+							  const float &gammaOffset_deg,
+							  const float &gain_distCorr,
+							  const float &distCorr_tethLen,
+							  const float &distCorr_ceta,
+							  const float &distCorr_omega,
+							  Vector3f &g_accRef);
+
+	void AWEE_control(const Vector3f &g_accRef,
+					  const Vector3f &g_vg,
+					  const Vector3f &g_ag,
+					  const Vector3f &eulerAngles,
+					  float &roll_rate,
+					  float &pitch_rate,
+					  float &thrust_sp);
+
+	bool closeEnough( float f1, float f2);
+	bool isZero(float f1);
 
 };
 
