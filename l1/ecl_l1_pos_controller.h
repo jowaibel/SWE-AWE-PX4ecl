@@ -177,7 +177,7 @@ public:
 							float &pitch_rate, float &roll_rate, float &thrust_sp, uint8_t &activeWPid, const Vector3f &eulerAngles,
 							const float flightPlnArr_deg[], const Vector2f &latLonTh_deg, const float &rAtNarrowestTurn,
 							const float &gain_gammaDiff, const float &gammaOffset_deg, const float &gain_distCorr,
-							const float &distCorr_tethLen, const float &distCorr_ceta, float &distCorr_omega);
+							const float &distCorr_tethLen, const float &distCorr_ceta, float &distCorr_omega, orb_advert_t _mavlink_log_pub);
 
 	/**
 	 * AWE Mode to fly an inclined circle in the hemisphere. Inspired by the AWEsome project of the University of Bonn.
