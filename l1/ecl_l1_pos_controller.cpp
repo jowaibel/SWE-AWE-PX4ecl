@@ -655,10 +655,10 @@ void ECL_L1_Pos_Controller::navigate_awe_eight(const Vector3f &g_xg, const Vecto
                                                const float &gain_gammaDiff, const float &gammaOffset_deg, const float &gain_distCorr,
                                                const float &distCorr_tethLen, const float &distCorr_ceta, float &distCorr_omega, orb_advert_t _mavlink_log_pub)
 {
-    mavlink_and_console_log_info(&_mavlink_log_pub, "g_xg: %f, %f, %f", (double)g_xg(0), (double)g_xg(1), (double)g_xg(2));
-    mavlink_and_console_log_info(&_mavlink_log_pub, "g_vg: %f, %f, %f", (double)g_vg(0), (double)g_vg(1), (double)g_vg(2));
-    mavlink_and_console_log_info(&_mavlink_log_pub, "g_ag: %f, %f, %f", (double)g_ag(0), (double)g_ag(1), (double)g_ag(2));
-    mavlink_and_console_log_info(&_mavlink_log_pub, "euler: %f, %f, %f", (double)(eulerAngles(0)*M_RAD_TO_DEG_F), (double)(eulerAngles(1)*M_RAD_TO_DEG_F), (double)(eulerAngles(2)*(M_RAD_TO_DEG_F)));
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "g_xg: %f, %f, %f", (double)g_xg(0), (double)g_xg(1), (double)g_xg(2));
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "g_vg: %f, %f, %f", (double)g_vg(0), (double)g_vg(1), (double)g_vg(2));
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "g_ag: %f, %f, %f", (double)g_ag(0), (double)g_ag(1), (double)g_ag(2));
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "euler: %f, %f, %f", (double)(eulerAngles(0)*M_RAD_TO_DEG_F), (double)(eulerAngles(1)*M_RAD_TO_DEG_F), (double)(eulerAngles(2)*(M_RAD_TO_DEG_F)));
 
     Vector2f presentLatLon;
     Dcmf Tlg;
@@ -668,31 +668,29 @@ void ECL_L1_Pos_Controller::navigate_awe_eight(const Vector3f &g_xg, const Vecto
 
     // Get present position of aircraft relative to sphere
     AWEE_navigation(g_xg, g_vg, presentLatLon, Tlg, Tlk_l, l_gamma, l_chi);
-    mavlink_and_console_log_info(&_mavlink_log_pub, "presentLatLon: %f, %f, %f", (double)presentLatLon(0), (double)presentLatLon(1), (double)presentLatLon(2));
-    mavlink_and_console_log_info(&_mavlink_log_pub, "l_gamma: %f, l_chi: %f,", (double)l_gamma*M_RAD_TO_DEG, (double)l_chi*M_RAD_TO_DEG);
-
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "presentLatLon: %f, %f, %f", (double)presentLatLon(0), (double)presentLatLon(1), (double)presentLatLon(2));
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "l_gamma: %f, l_chi: %f,", (double)l_gamma*M_RAD_TO_DEG, (double)l_chi*M_RAD_TO_DEG);
 
     // Get active waypoint to approach
     Vector3f activeWP;
     AWEE_guidance_WPSource(flightPlnArr_deg, latLonTh_deg, presentLatLon, activeWPid, activeWP);
-    mavlink_and_console_log_info(&_mavlink_log_pub, "activeWP: %f, %f, %f", (double)activeWP(0)*M_RAD_TO_DEG, (double)activeWP(1)*M_RAD_TO_DEG, (double)activeWP(2));
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "activeWP: %f, %f, %f", (double)activeWP(0)*M_RAD_TO_DEG, (double)activeWP(1)*M_RAD_TO_DEG, (double)activeWP(2));
 
     // Get track towards active waypoint
     float l_chiDiff;
     AWEE_guidance_chiRef(presentLatLon, activeWP, l_chi, l_chiDiff);
-    mavlink_and_console_log_info(&_mavlink_log_pub, "l_chiDiff: %f", (double)l_chiDiff*M_RAD_TO_DEG);
-
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "l_chiDiff: %f", (double)l_chiDiff*M_RAD_TO_DEG);
 
     // Get desired acceleration
     Vector3f g_accRef;
     AWEE_guidance_accRef(l_chiDiff, Tlg, Tlk_l, l_gamma, g_xg, g_vg,
                          rAtNarrowestTurn, gain_gammaDiff, gammaOffset_deg, gain_distCorr, distCorr_tethLen, distCorr_ceta, distCorr_omega, g_accRef);
-    mavlink_and_console_log_info(&_mavlink_log_pub, "g_accRef: %f, %f, %f", (double)g_accRef(0), (double)g_accRef(1), (double)g_accRef(2));
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "g_accRef: %f, %f, %f", (double)g_accRef(0), (double)g_accRef(1), (double)g_accRef(2));
 
 
     // Get roll and pitch rates
     AWEE_control(g_accRef, g_vg, g_ag, eulerAngles, roll_rate, pitch_rate, thrust_sp);
-    mavlink_and_console_log_info(&_mavlink_log_pub, "rr: %f, pr: %f, thr: %f", (double)roll_rate*M_RAD_TO_DEG, (double)pitch_rate*M_RAD_TO_DEG, (double)thrust_sp*M_RAD_TO_DEG);
+    // mavlink_and_console_log_info(&_mavlink_log_pub, "rr: %f, pr: %f, thr: %f", (double)roll_rate*M_RAD_TO_DEG, (double)pitch_rate*M_RAD_TO_DEG, (double)thrust_sp*M_RAD_TO_DEG);
 
 }
 
